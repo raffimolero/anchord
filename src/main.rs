@@ -1,3 +1,4 @@
+use editor::Editor;
 use glyphon::{
     Attrs, Buffer, Color, Family, FontSystem, Metrics, Resolution, Shaping, SwashCache, TextArea,
     TextAtlas, TextBounds, TextRenderer,
@@ -14,6 +15,8 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
     window::{WindowBuilder, WindowLevel},
 };
+
+mod editor;
 
 fn main() {
     pollster::block_on(run());
@@ -73,15 +76,11 @@ async fn run() {
     let physical_height = (height as f64 * scale_factor) as f32;
 
     buffer.set_size(&mut font_system, physical_width, physical_height);
-    buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", Attrs::new().family(Family::SansSerif), Shaping::Advanced);
+    // buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", Attrs::new().family(Family::SansSerif), Shaping::Advanced);
     buffer.shape_until_scroll(&mut font_system);
 
-    struct Stuff {
-        text: String,
-    }
-    let mut stuff = Stuff {
-        text: String::from("Hello, World!"),
-    };
+    let mut editor = Editor::new();
+    editor.update_buffer(&mut buffer, &mut font_system);
 
     event_loop.run(move |event, _, control_flow| {
         let _ = (&instance, &adapter);
@@ -101,16 +100,8 @@ async fn run() {
                 window_id: _,
                 event: WindowEvent::ReceivedCharacter(chr),
             } => {
-                println!("Received character: {chr:?} ({})", chr as u8);
-
-                stuff.text.push(chr);
-
-                buffer.set_text(
-                    &mut font_system,
-                    &stuff.text,
-                    Attrs::new().family(Family::Monospace),
-                    Shaping::Basic,
-                );
+                editor.input_char(control_flow, chr);
+                editor.update_buffer(&mut buffer, &mut font_system);
             }
             Event::WindowEvent {
                 window_id: _,
@@ -121,15 +112,13 @@ async fn run() {
                                 scancode,
                                 state,
                                 virtual_keycode,
-                                modifiers,
+                                .. // modifiers is deprecated
                             },
                         ..
                     },
             } => {
-                println!("Input: {input:?}");
-                if virtual_keycode == Some(VirtualKeyCode::Escape) {
-                    *control_flow = ControlFlow::Exit;
-                }
+                editor.input_key(control_flow, input);
+                editor.update_buffer(&mut buffer, &mut font_system);
             }
             Event::RedrawRequested(_) => {
                 text_renderer
