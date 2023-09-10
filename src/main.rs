@@ -79,7 +79,7 @@ async fn run() {
     // buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", Attrs::new().family(Family::SansSerif), Shaping::Advanced);
     buffer.shape_until_scroll(&mut font_system);
 
-    let mut editor = Editor::new();
+    let mut editor = Editor::new_scratch(60, 40);
     editor.update_buffer(&mut buffer, &mut font_system);
 
     event_loop.run(move |event, _, control_flow| {

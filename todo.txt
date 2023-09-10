@@ -1,0 +1,12 @@
+TODO:
+- keybinds
+    - track keyboard state
+    - send inputs to editor
+    - change editor state, switch binds in use
+- cursor undo history
+    - doubly linked jump tree
+    * include jumps within file pickers?
+    -
+- text editing + undo tree
+    - undo picker
+    - text display
