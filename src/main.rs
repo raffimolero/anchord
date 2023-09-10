@@ -10,9 +10,9 @@ use wgpu::{
 };
 use winit::{
     dpi::LogicalSize,
-    event::{Event, WindowEvent},
+    event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    window::{WindowBuilder, WindowLevel},
 };
 
 fn main() {
@@ -76,6 +76,13 @@ async fn run() {
     buffer.set_text(&mut font_system, "Hello world! 👋\nThis is rendered with 🦅 glyphon 🦁\nThe text below should be partially clipped.\na b c d e f g h i j k l m n o p q r s t u v w x y z", Attrs::new().family(Family::SansSerif), Shaping::Advanced);
     buffer.shape_until_scroll(&mut font_system);
 
+    struct Stuff {
+        text: String,
+    }
+    let mut stuff = Stuff {
+        text: String::from("Hello, World!"),
+    };
+
     event_loop.run(move |event, _, control_flow| {
         let _ = (&instance, &adapter);
 
@@ -89,6 +96,40 @@ async fn run() {
                 config.height = size.height;
                 surface.configure(&device, &config);
                 window.request_redraw();
+            }
+            Event::WindowEvent {
+                window_id: _,
+                event: WindowEvent::ReceivedCharacter(chr),
+            } => {
+                println!("Received character: {chr:?} ({})", chr as u8);
+
+                stuff.text.push(chr);
+
+                buffer.set_text(
+                    &mut font_system,
+                    &stuff.text,
+                    Attrs::new().family(Family::Monospace),
+                    Shaping::Basic,
+                );
+            }
+            Event::WindowEvent {
+                window_id: _,
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            input @ KeyboardInput {
+                                scancode,
+                                state,
+                                virtual_keycode,
+                                modifiers,
+                            },
+                        ..
+                    },
+            } => {
+                println!("Input: {input:?}");
+                if virtual_keycode == Some(VirtualKeyCode::Escape) {
+                    *control_flow = ControlFlow::Exit;
+                }
             }
             Event::RedrawRequested(_) => {
                 text_renderer
