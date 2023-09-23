@@ -3,6 +3,8 @@
 //! and would rather not break when keyboard layouts change.
 //! if your keyboard isn't supported then i may change my mind.
 
+pub type ScanCode = u32;
+
 pub const F1: u32 = 59;
 pub const F2: u32 = 60;
 pub const F3: u32 = 61;
