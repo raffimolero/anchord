@@ -1,7 +1,7 @@
-/// for quick reference on my QWERTY keyboard
-/// we are not using virtual keycodes, as we do not care about mnemonics
-/// and would rather not break when keyboard layouts change
-/// if your keyboard isn't supported then i may change my mind
+//! for quick reference on my QWERTY keyboard.
+//! we are not using virtual keycodes, as we do not care about mnemonics,
+//! and would rather not break when keyboard layouts change.
+//! if your keyboard isn't supported then i may change my mind.
 
 pub const F1: u32 = 59;
 pub const F2: u32 = 60;
