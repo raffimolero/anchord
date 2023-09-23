@@ -23,7 +23,7 @@ impl MaybeSplit {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct WindowNode {
-    buf: TextBufRef,
+    data: TextBufRef,
     next: MaybeSplit,
 }
 
@@ -41,31 +41,63 @@ impl ActiveWindows {
         let mut nodes = [None; Self::MAX_WINDOWS];
 
         nodes[0] = Some(WindowNode {
-            buf: init_buffer,
+            data: init_buffer,
             next: MaybeSplit::NONE,
         });
 
-        Self {
-            w, h, nodes
-        }
+        Self { w, h, nodes }
     }
 
-    // TODO: merge TextBuffer and glyphon::Buffer?
-    pub fn render(&self, txt_bufs: &TextBuffers, glyph_buffer: &mut glyphon::Buffer, font_system: &mut FontSystem) {
-        todo!()
-        if !self.changed() {
-            return;
-        }
-        buffer.set_text(
-            font_system,
-            self.data.as_str(),
-            Attrs::new().family(Family::Monospace),
-            Shaping::Basic,
-        );
+    pub fn render(
+        &self,
+        txt_bufs: &TextBuffers,
+        glyph_buffer: &mut glyphon::Buffer,
+        font_system: &mut FontSystem,
+    ) {
+        let mut l = 0;
+        let mut t = 0;
+        let mut r = self.w;
+        let mut b = self.h;
+        // let mut stack = vec![];
+
+        let mut char_buf_map = vec![255_u8; self.w as usize * self.h as usize];
+        let mut i = 0;
+        self.nodes[i];
+        // TODO: polish notation traversal
+        //       take self.nodes, start from 0, and "recursively" map
+        //       each char in char_buf_map to a buffer index
+        // then use the buf map to push the appropriate chars into the glyphon buffer
+
+        // { // inlined from glyphon::Buffer::set_text
+        //     let attrs = Attrs::new().family(Family::Monospace);
+        //     let shaping = Shaping::Basic;
+        //     glyph_buffer.lines.clear();
+        //     for line in BidiParagraphs::new(text) {
+        //         glyph_buffer.lines.push(BufferLine::new(
+        //             line.to_string(),
+        //             AttrsList::new(attrs),
+        //             shaping,
+        //         ));
+        //     }
+        //     // Make sure there is always one line
+        //     if glyph_buffer.lines.is_empty() {
+        //         glyph_buffer.lines.push(BufferLine::new(
+        //             String::new(),
+        //             AttrsList::new(attrs),
+        //             shaping,
+        //         ));
+        //     }
+
+        //     glyph_buffer.scroll = 0;
+
+        //     glyph_buffer.shape_until_scroll(font_system);
+        // };
     }
 
     pub fn len(&self) -> usize {
-        self.nodes.iter().position(|e| e.is_none()).unwrap_or(Self::MAX_WINDOWS)
+        self.nodes
+            .iter()
+            .position(|e| e.is_none())
+            .unwrap_or(Self::MAX_WINDOWS)
     }
 }
-

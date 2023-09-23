@@ -100,7 +100,9 @@ async fn run() {
                 window_id: _,
                 event: WindowEvent::ReceivedCharacter(chr),
             } => {
-                editor.input_char(control_flow, chr);
+                if editor.input_char(chr).is_break() {
+                    control_flow.set_exit();
+                }
                 editor.update_buffer(&mut buffer, &mut font_system);
             }
             Event::WindowEvent {
@@ -117,7 +119,9 @@ async fn run() {
                         ..
                     },
             } => {
-                editor.input_key(control_flow, input);
+                if editor.input_key(input).is_break() {
+                    control_flow.set_exit();
+                }
                 editor.update_buffer(&mut buffer, &mut font_system);
             }
             Event::RedrawRequested(_) => {

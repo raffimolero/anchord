@@ -1,16 +1,14 @@
+mod binds;
 mod text;
 
-use self::text::{ActiveTextWindow, ActiveWindows};
+use self::{binds::Binds, text::ActiveWindows};
 use std::{
     num::NonZeroUsize,
-    ops::{Index, IndexMut},
+    ops::{ControlFlow, Index, IndexMut},
 };
 
 use glyphon::{Buffer, FontSystem};
-use winit::{
-    event::{KeyboardInput, VirtualKeyCode},
-    event_loop::ControlFlow,
-};
+use winit::event::{KeyboardInput, VirtualKeyCode};
 
 // Text Buffers
 
@@ -21,7 +19,7 @@ pub struct TextBuffer {
 
 impl TextBuffer {
     fn new_scratch() -> Self {
-        Self { data: todo!() }
+        Self { data: () }
     }
 }
 
@@ -49,7 +47,7 @@ impl Index<TextBufRef> for TextBuffers {
     type Output = TextBuffer;
 
     fn index(&self, index: TextBufRef) -> &Self::Output {
-        &mut self.0[index.0.get() - 1]
+        &self.0[index.0.get() - 1]
     }
 }
 
@@ -65,6 +63,7 @@ impl IndexMut<TextBufRef> for TextBuffers {
 pub struct Editor {
     text_buffers: TextBuffers,
     active_windows: ActiveWindows,
+    binds: Binds,
 }
 
 impl Editor {
@@ -72,18 +71,16 @@ impl Editor {
         Self {
             text_buffers: TextBuffers::new_scratch(),
             active_windows: ActiveWindows::new(w, h, TextBufRef::from(1)),
+            binds: Binds::new(),
         }
     }
 
-    pub fn input_char(&mut self, control_flow: &mut ControlFlow, chr: char) {
-        println!("Char: {chr:?} ({})", chr as u8);
+    pub fn input_char(&mut self, chr: char) -> ControlFlow<()> {
+        self.binds.input_char(chr)
     }
 
-    pub fn input_key(&mut self, control_flow: &mut ControlFlow, input: KeyboardInput) {
-        println!("Input: {input:?}");
-        if input.virtual_keycode == Some(VirtualKeyCode::Escape) {
-            control_flow.set_exit();
-        }
+    pub fn input_key(&mut self, input: KeyboardInput) -> ControlFlow<()> {
+        self.binds.input_key(input)
     }
 
     pub fn update_buffer(&self, buffer: &mut Buffer, font_system: &mut FontSystem) {
