@@ -56,7 +56,7 @@ pub const H: u32 = 35;
 pub const J: u32 = 36;
 pub const K: u32 = 37;
 pub const L: u32 = 38;
-pub const SEMICOLON: u32 = 39;
+pub const SEMI: u32 = 39;
 pub const APOSTROPHE: u32 = 40;
 pub const RETURN: u32 = 28;
 
