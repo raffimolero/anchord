@@ -1,7 +1,7 @@
 mod binds;
 mod text;
 
-use self::{binds::Binds, text::ActiveWindows};
+use self::{binds::State, text::ActiveWindows};
 use std::{
     num::NonZeroUsize,
     ops::{ControlFlow, Index, IndexMut},
@@ -63,7 +63,7 @@ impl IndexMut<TextBufRef> for TextBuffers {
 pub struct Editor {
     text_buffers: TextBuffers,
     active_windows: ActiveWindows,
-    binds: Binds,
+    state: State,
 }
 
 impl Editor {
@@ -71,16 +71,16 @@ impl Editor {
         Self {
             text_buffers: TextBuffers::new_scratch(),
             active_windows: ActiveWindows::new(w, h, TextBufRef::from(1)),
-            binds: Binds::new(),
+            state: State::new(),
         }
     }
 
     pub fn input_char(&mut self, chr: char) -> ControlFlow<()> {
-        self.binds.input_char(chr)
+        self.state.input_char(chr)
     }
 
     pub fn input_key(&mut self, input: KeyboardInput) -> ControlFlow<()> {
-        self.binds.input_key(input)
+        self.state.input_key(input)
     }
 
     pub fn update_buffer(&self, buffer: &mut Buffer, font_system: &mut FontSystem) {
