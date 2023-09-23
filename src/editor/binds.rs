@@ -34,7 +34,7 @@ pub struct State {
 impl State {
     pub fn new() -> Self {
         Self {
-            held_keys: Vec::with_capacity(2),
+            held_keys: Vec::with_capacity(10),
             max_held: 2,
             anchor: Pos::default(),
             cursor: Pos::default(),
@@ -52,16 +52,6 @@ impl State {
             S::Pressed => {
                 if let Some(_pos) = item_idx {
                     return ControlFlow::Break(());
-                }
-                while self.held_keys.len() as u8 >= self.max_held {
-                    let last_scancode = self.held_keys.remove(0);
-                    let synthetic_input = KeyboardInput {
-                        scancode: last_scancode,
-                        state: S::Released,
-                        virtual_keycode: None,
-                        ..input
-                    };
-                    self.input_key(synthetic_input);
                 }
                 self.held_keys.push(input.scancode);
             }
@@ -93,14 +83,19 @@ impl State {
             return ControlFlow::Continue(());
         }
 
+        let key_count = self.held_keys.len();
+        let max_keys = self.max_held as usize;
+        let count = key_count.min(max_keys);
+        let first_n_keys = &self.held_keys[..count];
+
         match self.mode {
             Mode::Normal => {
                 if input.virtual_keycode == Some(VirtualKeyCode::Escape) {
                     return ControlFlow::Break(());
                 }
-                match (input.state, input.scancode) {
-                    (S::Pressed, k::A) => {
-                        println!("a");
+                match (input.state, input.scancode, first_n_keys) {
+                    (S::Pressed, k::A, &[k::S, k::A]) => {
+                        println!("SA");
                     }
                     code => {
                         print!("unknown code: ")
