@@ -23,29 +23,26 @@ enum Mode {
 }
 
 #[derive(Debug)]
-pub struct State {
+struct Input {
     held_keys: Vec<ScanCode>,
     max_held: u8,
-    history: Vec<(ElementState, ScanCode)>,
-    anchor: Pos,
-    cursor: Pos,
-    mode: Mode,
+    held_key_overflow: u8,
 }
 
-impl State {
-    pub fn new() -> Self {
+impl Input {
+    fn new() -> Self {
         const DEFAULT_MAX_HELD: u8 = 2;
         Self {
             held_keys: Vec::with_capacity(10),
             max_held: DEFAULT_MAX_HELD,
-            history: Vec::with_capacity(DEFAULT_MAX_HELD as usize),
-            anchor: Pos::default(),
-            cursor: Pos::default(),
-            mode: Mode::default(),
+            held_key_overflow: 0,
         }
     }
 
-    fn filter_held(&mut self, input: KeyboardInput) -> ControlFlow<()> {
+    fn filter_held(
+        &mut self,
+        input: KeyboardInput,
+    ) -> ControlFlow<(), (&[ScanCode], ElementState, ScanCode)> {
         // TODO: allow key repeat and holding more than max keys
         // but trigger key releases before then
         // use a keypress queue for macros
@@ -60,14 +57,47 @@ impl State {
                     return ControlFlow::Break(());
                 }
                 self.held_keys.push(input.scancode);
+                if self.held_keys.len() as u8 - self.held_key_overflow > self.max_held {
+                    self.held_key_overflow += 1;
+                }
             }
             ElementState::Released => {
                 if let Some(pos) = item_idx {
                     self.held_keys.remove(pos);
+                    if (pos as u8) < self.held_key_overflow {
+                        self.held_key_overflow -= 1;
+                    }
                 }
             }
         }
-        ControlFlow::Continue(())
+
+        let offset = match input.state {
+            ElementState::Pressed => 1,
+            ElementState::Released => 0,
+        };
+        let effective_held =
+            &self.held_keys[self.held_key_overflow as usize..self.held_keys.len() - offset];
+        let input = (effective_held, input.state, input.scancode);
+        ControlFlow::Continue(input)
+    }
+}
+
+#[derive(Debug)]
+pub struct State {
+    input: Input,
+    anchor: Pos,
+    cursor: Pos,
+    mode: Mode,
+}
+
+impl State {
+    pub fn new() -> Self {
+        Self {
+            input: Input::new(),
+            anchor: Pos::default(),
+            cursor: Pos::default(),
+            mode: Mode::default(),
+        }
     }
 
     // TODO:
@@ -85,13 +115,9 @@ impl State {
     }
 
     pub fn input_key(&mut self, input: KeyboardInput) -> ControlFlow<()> {
-        if self.filter_held(input).is_break() {
+        let ControlFlow::Continue(effective_input) = self.input.filter_held(input) else {
             return ControlFlow::Continue(());
-        }
-        if self.history.len() as u8 >= self.max_held {
-            self.history.remove(0);
-        }
-        self.history.push((input.state, input.scancode));
+        };
 
         use scancodes::*;
         use ElementState::{Pressed as Dn, Released as Up};
@@ -101,18 +127,19 @@ impl State {
                 if input.virtual_keycode == Some(VirtualKeyCode::Escape) {
                     return ControlFlow::Break(());
                 }
-                match self.history.as_slice() {
-                    (&[(Dn, J), (Up, J)]) => println!("J"),
-                    (&[(Dn, K), (Dn, J)]) => println!("KJ"),
-                    (&[(Dn, J), (Dn, K)]) => println!("JK"),
-                    (&[(Dn, L), (Dn, SEMI)]) => println!("L;"),
-                    (&[(Dn, SEMI), (Dn, L)]) => println!(";L"),
+                match effective_input {
+                    (&[J], Up, J) => println!("J"),
+                    (&[K], Dn, J) => println!("KJ"),
+                    (&[J], Dn, K) => println!("JK"),
+                    (&[L], Dn, SEMI) => println!("L;"),
+                    (&[SEMI], Dn, L) => println!(";L"),
                     code => print!("unknown code: "),
                 }
+                println!("{effective_input:?}");
                 println!(
                     "{:?} {} {:?}",
-                    input.virtual_keycode, input.scancode, self.history
-                )
+                    input.virtual_keycode, input.scancode, self.input,
+                );
             }
             Mode::Insert => {
                 if input.virtual_keycode == Some(VirtualKeyCode::Escape) {
