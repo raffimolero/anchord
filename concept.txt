@@ -1,0 +1,159 @@
+
+Anchord Text Editor?
+ 
+modes: more like state stack.
+Jumplist: Vec<(Pos, Pos)>
+Multiselect: Vec<usize> (index into jumplist)
+Anchor: Pos
+Fencepost: Pos
+Text: Pos
+
+leader key: (Shift) Space
+command key: Enter
+so now instead of S-;w<ret>, it's <ret>w<ret>
+
+All about Anchors. Moving anchors is everything.
+use the whole keyboard to navigate every step of the way. 30 keys available, use them for alternating vertical/horizontal movement.
+look at a point, press the "Jump" key, each line turns into a character. press that character to jump to that line.
+then, the line reveals itself, and the lines above and below it show a horizontal sequence of characters that you can jump to.
+3 key presses to jump to a 30 by 30 square centered on your current cursor.
+
+space = down one stack
+shift+space = up one stack
+" = reset to Anchor
+
+
+Undo (hold?)
+j = undo motion
+; = redo motion
+k = undo edit
+l = redo edit
+
+Matching things
+"find" (a) [s] {d} <f> 'g' "h"
+j; = select around
+kl = select inside
+jk = search back
+l; = search forward
+j = before prev
+k = after prev
+l = before next
+; = after next
+
+outside[selection]outside
+text + j = insert everything before the selection
+text + k = insert everything in the beginning of the selection
+text + l = insert everything in the end of the selection
+text + ; = insert everything after the selection
+
+try https://github.com/LunarVim/LunarVim
+
+plan
+
+look, the left hand has 5 entire buttons to press in normal mode. that's 5 entire bits in theory but of course not all keyboards like chording. some keyboards don't even recognize more than 2 keys. however, most have separate wires for modifier keys, meaning we can press ctrl+shift+alt+2 keys in theory.
+
+Chording asdf sets the mode.
+
+jkl;
+left up down right
+
+Movement modes (Multicursor mode, Cursor Lay mode)
+
+missing:
+- selection manipulation (might have something to do with multicursors and jumplists)
+- indent/outdent
+
+left hand: a s d f space
+right hand: jkl;
+
+jkl; movement, left down up right
+
+Bar vs Fence cursor style
+
+Insert chords
+- insert
+- open above
+- open below
+- append
+Paste chords:
+- paste behind
+- paste above
+- paste below
+- paste append
+
+Base movement:
+- Bar style
+    - j; will select word (if passed an open pair, selects whole pair)
+- kl will select line, going downwards
+- lk will select line, going upwards
+
+Movement chords:
+- previous word
+- previous closing character
+- next closing character
+- next word
+Tap Movement commands:
+- start of line (stop just before tabs, twice for start of line)
+- start of file
+- end of file
+- end of line
+- chording j; will select block
+- chording kl will select file
+
+
+Undo commands:
+- undo
+- cursor undo
+- cursor redo
+- redo
+Tap Undo commands:
+- ?
+- ?
+- ?
+- ?
+
+
+Multicursor controls:
+- control previous cursor
+- new cursor above
+- new cursor below
+- next cursor
+
+
+
+home row: movement and undo/redo
+top row: advanced stuff
+
+holding qwer,asdf,space will modify the behavior of jkl;
+- Space then Chord will enter Number mode
+- a - 
+- s
+- d
+- f
+- 
+- q
+- w
+- e
+- r
+- a for 
+- q for remove cursor and jump to previous / remove all cursors except last / remove all except first / remove and next
+- s for ?
+- w for ?
+- d for Insertion commands
+- e for Undo commands
+- f for
+- r for home/eof/start/end
+- pressing space will lay an inactive cursor
+
+holding right side keys will modify the behavior of asdf.
+
+this is all normal mode btw, this doesn't cover jumping between modes
+
+Number mode
+the whole home row is numbers. #### you, that's why. 1-9,0 by default.
+space to execute the specified action.
+all other keys map to backspace.
+
+Insert mode
+
+Tab at the start of the line will indent. Tab in the middle of the line will auto-close pairs.
