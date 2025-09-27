@@ -8,18 +8,23 @@ use std::{
 };
 
 use glyphon::{Buffer, FontSystem};
+use ropey::Rope;
 use winit::event::{KeyboardInput, VirtualKeyCode};
 
 // Text Buffers
 
 #[derive(Debug, Clone, Default)]
 pub struct TextBuffer {
-    data: (), // TODO
+    data: Rope,
 }
 
 impl TextBuffer {
     fn new_scratch() -> Self {
-        Self { data: () }
+        Self { data: Rope::new() }
+    }
+    
+    fn lines(&self, viewport: )  {
+
     }
 }
 

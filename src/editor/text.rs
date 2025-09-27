@@ -63,7 +63,8 @@ impl ActiveWindows {
         let mut char_buf_map = vec![255_u8; self.w as usize * self.h as usize];
         let mut i = 0;
         self.nodes[i];
-        // TODO: polish notation traversal
+
+        // TODO: support more windows. use polish notation traversal.
         //       take self.nodes, start from 0, and "recursively" map
         //       each char in char_buf_map to a buffer index
         // then use the buf map to push the appropriate chars into the glyphon buffer

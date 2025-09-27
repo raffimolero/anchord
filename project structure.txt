@@ -1,0 +1,7 @@
+commands
+    insert text
+    create cursor
+    create window
+
+engine
+    input commands, it edits text

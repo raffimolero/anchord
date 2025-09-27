@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 glyphon = "0.3"
 pollster = "0.3"
+ropey = "1.6.1"
 wgpu = "0.16"
 winit = "0.28"

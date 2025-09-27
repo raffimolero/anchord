@@ -128,7 +128,7 @@ impl State {
                     return ControlFlow::Break(());
                 }
                 match effective_input {
-                    (&[J], Up, J) => println!("J"),
+                    (&[], Up, J) => println!("J"),
                     (&[K], Dn, J) => println!("KJ"),
                     (&[J], Dn, K) => println!("JK"),
                     (&[L], Dn, SEMI) => println!("L;"),
